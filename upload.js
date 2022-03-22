@@ -1,6 +1,8 @@
 
+var ip = "http://39.96.14.155"
+var port = ":8888"
 //提交数据
-const UPLOAD_URL = "http://localhost:8888/upload";
+const UPLOAD_URL = ip+port+"/upload";
 
 var m_Count = 0
 var progress1
