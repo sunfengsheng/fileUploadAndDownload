@@ -9,6 +9,7 @@ var fs = require('fs');
 var router = new Router()
 const app = new koa()
 var m_Count = 0
+var port = 8888
 app.use(cors());
 
 var uploadChunkPath = path.resolve(__dirname,'./data')
@@ -98,7 +99,15 @@ router.get('/download',async (ctx)=>{
 })
 
 
+router.get('/',async (ctx)=>{
+  ctx.res.setHeader("Access-Control-Expose-Headers","Content-Disposition")
+  ctx.res.setHeader('Content-Type', 'text/html;charset=UTF-8')
+  const html = fs.readFileSync("./upload.html", "binary");
+  ctx.body = html;
+})
+
+
 app.use(router.routes());
-app.listen(8888, () => {
-  console.log("服务器已启动，http://localhost:3000");
+app.listen(port, () => {
+  console.log("服务器已启动，http://localhost:%s",port);
 })
