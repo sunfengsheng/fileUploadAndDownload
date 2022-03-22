@@ -6,6 +6,7 @@ var cors = require('koa2-cors');
 const send = require('koa-send');
 var fs = require('fs');
 
+
 var router = new Router()
 const app = new koa()
 var m_Count = 0
@@ -105,6 +106,21 @@ router.get('/',async (ctx)=>{
   const html = fs.readFileSync("./upload.html", "binary");
   ctx.body = html;
 })
+router.get('/upload.js',async (ctx)=>{
+  ctx.res.setHeader("Access-Control-Expose-Headers","Content-Disposition")
+  ctx.res.setHeader('Content-Type', 'text/html;charset=UTF-8')
+  const html = fs.readFileSync("./upload.js", "binary");
+  ctx.body = html;
+})
+
+router.get('/download.js',async (ctx)=>{
+  ctx.res.setHeader("Access-Control-Expose-Headers","Content-Disposition")
+  ctx.res.setHeader('Content-Type', 'text/html;charset=UTF-8')
+  const html = fs.readFileSync("./download.js", "binary");
+  ctx.body = html;
+})
+
+
 
 
 app.use(router.routes());
