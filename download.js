@@ -1,4 +1,7 @@
-const DOWNLOAD_URL = "http://localhost:8888/download";
+var ip = "http://39.96.14.155"
+var port = ":8888"
+//提交数据
+const DOWNLOAD_URL = ip+port+"/download";
 function downloadclick() {
     downloadFile()
 }
