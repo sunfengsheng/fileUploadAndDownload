@@ -3,10 +3,16 @@
 <title>文件上传表单</title>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 <script type="text/javascript" src="upload.js"></script>
+<script type="text/javascript" src="download.js"></script>
 </head>
 <body>
-<input type="file" name="f1" id="test">
-<button id="upload_btn" onclick="clicking()" >确认上传</button>
+<input type="file" name="f1" id="upload">
+<button id="upload_btn" onclick="uploadclick()" >确认上传</button>
+<progress value="0" id="uploadProgress">
+</progress>
+<br>
+<input type="text" size="10" maxlength="30" id="download">
+<button id="download_btn" onclick="downloadclick()" >确认下载</button>
 </body>
 </html>
 

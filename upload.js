@@ -1,37 +1,29 @@
 
 //提交数据
-const UPLOAD_URL = "http://localhost:8890/upload";
+const UPLOAD_URL = "http://localhost:8888/upload";
 
-function clicking() {
-    submitUpload(UPLOAD_URL, getElFile("input#test"));
+var m_Count = 0
+var progress1
+
+function uploadclick() {
+    submitUpload(UPLOAD_URL, getElFile("input#upload"));
 }
 
   //主体上传功能
 async function submitUpload(url, file) {
-    const CHUNKSIZE =  16 * 1024 * 1024; // 1M
+    const CHUNKSIZE =  4 * 1024 * 1024; // 1M
     const TOKEN = Date.now();
     //切割数组
     const chunkList = sliceFile(file, CHUNKSIZE);
     //创建formdata 并上传
     console.log(file.name);
+    progress1 = document.getElementById("uploadProgress")
+    // progress1.set=chunkList.length
+    progress1.setAttribute("max",chunkList.length)
+    console.log('====================================',chunkList.length,progress1.max)
     let promiseList = createChunkPromiseList(chunkList, file.name, TOKEN);
     //并发控制 上传
-    await createLimitPromise(2, promiseList);
-    //合并分片
-    let mergeFormData = new FormData();
-    mergeFormData.append("type", "merge");
-    mergeFormData.append("token", TOKEN);
-    mergeFormData.append("chunkCount", chunkList.length);
-    mergeFormData.append("fileName", file.name);
-    //结束后发送合并请
-
-    var request = new XMLHttpRequest();
-    request.open("POST", url);
-    await request.send(mergeFormData);
-    request.onreadystatechange=function()
-  {
-  console.log("res2 is success")
-  }
+    let a = await createLimitPromise(2, promiseList)
 }
 
 
@@ -111,15 +103,28 @@ function createLimitPromise(limitNum, promiseListRaw) {
         formdata.append("token", TOKEN);
         formdata.append("chunk", chunk);
         formdata.append("index", index);
+        formdata.append("count", chunkList.length);
         return formdata;
       })
       .map(formdata => {
         var request = new XMLHttpRequest();
         request.open("POST", UPLOAD_URL,true);
         request.send(formdata);
+        m_Count++
         request.onreadystatechange=function()
           {
-          console.log("res1 is success")
+            if(request.readyState === XMLHttpRequest.DONE && request.status === 200) {
+              console.log(request.responseText)
+              if(request.responseText.includes("token")){
+                var pin = request.responseText.replace('token:','')
+                console.log("---------------",pin)
+                progress1.value=0
+                m_Count=0
+                alert(pin);
+              }else{
+                progress1.value=m_Count
+              }
+            }
           }
       });
   }

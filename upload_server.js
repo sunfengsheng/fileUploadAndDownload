@@ -3,13 +3,15 @@ var path = require('path');
 var KoaBody = require('koa-body');
 var Router = require('koa-router');
 var cors = require('koa2-cors');
+const send = require('koa-send');
 var fs = require('fs');
 
 var router = new Router()
 const app = new koa()
+var m_Count = 0
 app.use(cors());
 
-const uploadChunkPath = path.resolve(__dirname,'./data')
+var uploadChunkPath = path.resolve(__dirname,'./data')
 app.use(KoaBody({
   multipart:true, // 支持文件上传 
   formidable: {
@@ -21,27 +23,38 @@ app.use(KoaBody({
 
 router.post('/upload',ctx=>{
   console.log(ctx.request.body);
-  if(ctx.request.body.type === 'merge'){
-          const {token,chunkCount,fileName} = ctx.request.body
-          mergeChunkFile(fileName,uploadChunkPath,chunkCount,token,'./data')    
-          ctx.body =  'ok'
-          console.log('merge is finish');
-  }else if(ctx.request.body.type === 'upload'){
-          const {index,token,name} = ctx.request.body
+  if(ctx.request.body.type === 'upload'){
+          const {index,token,name,count} = ctx.request.body
+          m_Count++
           const chunkFile = ctx.request.files.chunk
           const chunkName = chunkFile.path.split('/').pop()
+          // var uploadChunkPath = token + '-data'
+          // fs.exists(uploadChunkPath, function(exists) {
+          //   if(!exists){
+          //     fs.mkdirSync(uploadChunkPath)
+          //   }
+          // });
           renameFile(uploadChunkPath,chunkName,`${name}-${index}-${token}`)
-          ctx.body = 'upload chunk success'
-          console.log('upload is finish');
-  }else{
+
+          if(m_Count==count){
+            mergeChunkFile(name,uploadChunkPath,count,token,'./data')
+            ctx.body = "token:"+token
+            console.log('upload & merge is finish');
+            m_Count=0
+          }else{
+            ctx.body = index
+            console.log('upload is finish');
+          }
+          
+    }else{
       ctx.body = "unkown type"
-  }
+    }
 })
 
 const mergeChunkFile = (fileName,chunkPath,chunkCount,fileToken,dataDir)=>{
-    dataDir = "./file"
-    // fs.mkdirSync(fileToken)
-    // dataDir = fileToken
+    // dataDir = "./file"
+    fs.mkdirSync(fileToken)
+    dataDir = fileToken
     //如果chunkPath 不存在 则直接结束
     if(!fs.existsSync(chunkPath)) return 
     const dataPath = path.join(__dirname,dataDir,fileName);
@@ -72,7 +85,20 @@ function renameFile(dir,oldName,newName){
   fs.renameSync(oldPath,newPath)
 }
 
+router.get('/download',async (ctx)=>{
+  ctx.res.setHeader("Access-Control-Expose-Headers","Content-Disposition")
+  console.log(ctx.query.token);
+  var token = ctx.query.token
+  ctx.response.body = 'wqwqwqq';
+  var readDir = fs.readdirSync(ctx.query.token);
+  var fileName = readDir[0]
+  const path = token+'/'+fileName;        
+  ctx.attachment(path);    
+  await send(ctx, fileName,{ root: __dirname + '/' +token });
+})
+
+
 app.use(router.routes());
-app.listen(8890, () => {
+app.listen(8888, () => {
   console.log("服务器已启动，http://localhost:3000");
 })
