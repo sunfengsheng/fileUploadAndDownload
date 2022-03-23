@@ -1,4 +1,5 @@
 var ip = "http://39.96.14.155"
+// var ip = "http://127.0.0.1"
 var port = ":8888"
 //提交数据
 const DOWNLOAD_URL = ip+port+"/download";
@@ -30,7 +31,9 @@ function downloadFile(){
         let link = document.createElement("a");
         let headerfileName =  request.getResponseHeader("Content-Disposition");
         if(headerfileName){
-                fileName = headerfileName.replace('attachment; filename=','');
+                // fileName = decodeURI(headerfileName.replace('attachment; filename=',''));
+                fileName = decodeURI(request.getResponseHeader('filename'))
+                
                 console.log(fileName)
         }
         link.href = window.URL.createObjectURL(blob);

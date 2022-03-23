@@ -88,12 +88,17 @@ function renameFile(dir,oldName,newName){
 }
 
 router.get('/download',async (ctx)=>{
+
+  ctx.res.setHeader('Content-Type', 'text/html;charset=UTF-8')
   ctx.res.setHeader("Access-Control-Expose-Headers","Content-Disposition")
+
   console.log(ctx.query.token);
   var token = ctx.query.token
   ctx.response.body = 'wqwqwqq';
   var readDir = fs.readdirSync(ctx.query.token);
   var fileName = readDir[0]
+
+  ctx.res.setHeader("FileName", encodeURI(fileName, "UTF-8")); 
   const path = token+'/'+fileName;        
   ctx.attachment(path);    
   await send(ctx, fileName,{ root: __dirname + '/' +token });
