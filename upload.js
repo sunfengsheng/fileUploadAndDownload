@@ -1,6 +1,6 @@
 
-var ip = "http://39.96.14.155"
-// var ip = "http://127.0.0.1"
+// var ip = "http://39.96.14.155"
+var ip = "http://127.0.0.1"
 var port = ":8888"
 //提交数据
 const UPLOAD_URL = ip+port+"/upload";
@@ -21,12 +21,11 @@ async function submitUpload(url, file) {
     //创建formdata 并上传
     console.log(file.name);
     progress1 = document.getElementById("uploadProgress")
-    // progress1.set=chunkList.length
     progress1.setAttribute("max",chunkList.length)
     console.log('====================================',chunkList.length,progress1.max)
     let promiseList = createChunkPromiseList(chunkList, file.name, TOKEN);
     //并发控制 上传
-    let a = await createLimitPromise(2, promiseList)
+    let a = await createLimitPromise(8, promiseList)
 }
 
 
@@ -113,7 +112,6 @@ function createLimitPromise(limitNum, promiseListRaw) {
         var request = new XMLHttpRequest();
         request.open("POST", UPLOAD_URL,true);
         request.send(formdata);
-        m_Count++
         request.onreadystatechange=function()
           {
             if(request.readyState === XMLHttpRequest.DONE && request.status === 200) {
@@ -125,6 +123,8 @@ function createLimitPromise(limitNum, promiseListRaw) {
                 m_Count=0
                 alert(pin);
               }else{
+                m_Count++
+                console.log("------------------------",m_Count)
                 progress1.value=m_Count
               }
             }

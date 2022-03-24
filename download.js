@@ -29,13 +29,7 @@ function downloadFile(){
         var contentType = request.getResponseHeader("content-type");
         const blob = new Blob([request.response], { type: contentType }); 
         let link = document.createElement("a");
-        let headerfileName =  request.getResponseHeader("Content-Disposition");
-        if(headerfileName){
-                // fileName = decodeURI(headerfileName.replace('attachment; filename=',''));
-                fileName = decodeURI(request.getResponseHeader('filename'))
-                
-                console.log(fileName)
-        }
+        var fileName = decodeURI(request.getResponseHeader('filename'))
         link.href = window.URL.createObjectURL(blob);
         link.download = fileName;
         link.click();
