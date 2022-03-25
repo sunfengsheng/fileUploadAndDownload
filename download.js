@@ -18,6 +18,7 @@ function downloadFile(){
     formdata.append("token", token);
     var request = new XMLHttpRequest();
     request.open("GET", DOWNLOAD_URL+'?token='+token,true);
+    request.responseType = "blob";
     request.send(formdata);
     request.onreadystatechange=function()
       {
@@ -26,8 +27,10 @@ function downloadFile(){
         }
       }
       request.onload = function (e) {
+        console.log(e)
+        var content = request.response;
         var contentType = request.getResponseHeader("content-type");
-        const blob = new Blob([request.response], { type: contentType }); 
+        var blob = new Blob([content]);
         let link = document.createElement("a");
         var fileName = decodeURI(request.getResponseHeader('filename'))
         link.href = window.URL.createObjectURL(blob);

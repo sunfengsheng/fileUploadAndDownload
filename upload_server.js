@@ -30,14 +30,7 @@ router.post('/upload',ctx=>{
           m_Count++
           const chunkFile = ctx.request.files.chunk
           const chunkName = chunkFile.path.split('/').pop()
-          // var uploadChunkPath = token + '-data'
-          // fs.exists(uploadChunkPath, function(exists) {
-          //   if(!exists){
-          //     fs.mkdirSync(uploadChunkPath)
-          //   }
-          // });
           renameFile(uploadChunkPath,chunkName,`${name}-${index}-${token}`)
-
           if(m_Count==count){
             mergeChunkFile(name,uploadChunkPath,count,token,'./data')
             ctx.body = "token:"+token
@@ -103,37 +96,6 @@ router.get('/download',async (ctx)=>{
   await send(ctx, fileName,{ root: __dirname + '/' +token });
 })
 
-
-router.get('/test',async (ctx)=>{
-  ctx.res.setHeader('Content-Type', 'text/html;charset=UTF-8')
-  ctx.res.setHeader("Access-Control-Expose-Headers","Content-Disposition")
-  console.log('fsdfsdfsfs')
-  console.log(ctx.query.token);
-  var token = ctx.query.token
-  var readDir = fs.readdirSync(ctx.query.token);
-  var fileName = readDir[0]
-  ctx.res.setHeader("FileName", encodeURI(fileName, "UTF-8")); 
-  let requestUrl = ctx.request.originalUrl;
-  console.log(requestUrl)
-  let filePath = path.resolve(__dirname + '/' + token + '/' + decodeURI(fileName));
-  console.log(filePath)
-  console.log(ctx.headers)
-  let resHred = readFile(ctx.headers.range, filePath);
-  console.log(ctx.headers['content-range'])
-
-  ctx.status = resHred.code
-  ctx.set(resHred.head);
-  let stream = fs.createReadStream(filePath, resHred.code == 200 ? {} : { start: resHred.start, end: resHred.end });
-  stream.pipe(ctx.res);
-  ctx.respond = false;
-  return
-
-})
-
-
-
-
-
 router.get('/',async (ctx)=>{
   ctx.res.setHeader("Access-Control-Expose-Headers","Content-Disposition")
   ctx.res.setHeader('Content-Type', 'text/html;charset=UTF-8')
@@ -161,71 +123,3 @@ app.use(router.routes());
 app.listen(port, () => {
   console.log("服务器已启动，http://localhost:%s",port);
 })
-
-
-function readFile(range, filePath, chunkSize = 499999 * 2) {
-  //mime类型
-  const mime = {
-      "css": "text/css",
-      "gif": "image/gif",
-      "html": "text/html",
-      "ico": "image/x-icon",
-      "jpeg": "image/jpeg",
-      "jpg": "image/jpeg",
-      "js": "text/javascript",
-      "json": "application/json",
-      "pdf": "application/pdf",
-      "png": "image/png",
-      "svg": "image/svg+xml",
-      "swf": "application/x-shockwave-flash",
-      "tiff": "image/tiff",
-      "txt": "text/plain",
-      "mp3": "audio/mp3",
-      "wav": "audio/x-wav",
-      "wma": "audio/x-ms-wma",
-      "wmv": "video/x-ms-wmv",
-      "xml": "text/xml",
-      "mp4": "video/mp4"
-  };
-  // 获取后缀名
-  let ext = path.extname(filePath);
-  ext = ext ? ext.slice(1) : 'unknown';
-  //未知的类型一律用"text/plain"类型
-  let contentType = mime[ext.toLowerCase()];
-
-  //建立流对象，读文件
-  let stat = fs.statSync(filePath)
-  let fileSize = stat.size;
-  let head = {
-      code: 200,
-      head: {
-          'Content-Length': fileSize,
-          'content-type': contentType,
-      }
-
-  };
-  if (range) {
-      // 大文件分片
-      let parts = range.replace("bytes=", "").split("-");
-      console.log(parts)
-      let start = parseInt(parts[0], 10);
-      let end = parts[1] ? parseInt(parts[1], 10) : start + chunkSize;
-      end = end > fileSize - 1 ? fileSize - 1 : end;
-      chunkSize = (end - start) + 1;
-      head = {
-          code: 206,
-          filePath,
-          start,
-          end,
-          head: {
-              'Content-Range': `bytes ${start}-${end}/${fileSize}`,
-              'content-type': contentType,
-              'Content-Length': chunkSize,
-              'Accept-Ranges': 'bytes'
-          }
-      }
-      console.log(head)
-
-  }
-  return head;
-}
